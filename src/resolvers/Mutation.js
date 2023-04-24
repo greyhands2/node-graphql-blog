@@ -174,7 +174,7 @@ const Mutation = {
 
     async createComment(parent, args, {prisma}, info){
         let {author, post} = args.data
-        let {db, pubsub, dbRelationalFields, gprf} = ctx
+        let {pubsub, dbRelationalFields, gprf} = ctx
         let userExist = await prisma.user.findUnique({where:{id: author}})
         let postExist = await prisma.post.findUnique({where: {id: post}})
         
