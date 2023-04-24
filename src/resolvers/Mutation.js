@@ -94,9 +94,23 @@ const Mutation = {
         })
         return newPost
     },
-    deletePost(parent, args, ctx, info){
-        let {db, pubsub} = ctx
+    deletePost(parent, {id}, {pubsub, prisma, dbRelationalFields, gprf}, info){
         
+        const postIndex = db.posts.findIndex((post) => post.id === args.id)
+        if(postIndex === -1) throw new GraphQLError("Post does not exist")
+        //delete post
+        let [deletedPost] = db.posts.splice(postIndex, 1);
+        //remove comments under post
+        db.comments = db.comments.filter((comment) => comment.post !== args.id)
+
+        if(deletedPost.published === true){
+            pubsub.publish('post', {
+                post: {
+                   mutation: 'DELETED',
+                   data: deletedPost 
+                }
+            })
+        }
         return deletedPost
     },
 
