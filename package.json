@@ -1,0 +1,69 @@
+{
+
+
+  "scripts": {
+
+
+    "start": "nodemon src/index.js --ext js,ts,graphql --exec babel-node"
+
+
+  },
+
+
+  "dependencies": {
+
+
+    "@graphql-tools/load-files": "^6.6.1",
+
+
+    "@graphql-tools/schema": "^9.0.16",
+
+
+    "@prisma/client": "^4.12.0",
+
+
+    "babel-cli": "^6.26.0",
+
+
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+
+
+    "babel-preset-env": "^1.7.0",
+
+
+    "graphql-fields": "^2.0.3",
+
+
+    "graphql-parse-fields": "^1.2.0",
+
+
+    "graphql-parse-relation-fields": "^1.0.11",
+
+
+    "graphql-subscriptions": "^2.0.0",
+
+
+    "graphql-yoga": "^3.5.1",
+
+
+    "prisma": "^4.12.0",
+
+
+    "uuid": "^9.0.0"
+
+
+  },
+
+
+  "devDependencies": {
+
+
+    "nodemon": "^2.0.20"
+
+
+  }
+
+
+}
+
+

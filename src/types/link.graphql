@@ -1,0 +1,44 @@
+type Query {
+        
+        
+        links(query: String): [Link!]! 
+    }
+
+    type Mutation {
+        
+
+        createLink(data: CreateLinkInput): Link!
+
+        deleteLink(id: ID!): Link!
+
+        updateLink(id: ID!, user: ID!, data: UpdateLinkInput): Link!
+    }
+
+    input CreateLinkInput {
+        text: String!
+        userId: ID!
+        name: String!
+        
+    }
+
+    input UpdateLinkInput {
+        text: String
+        name: String
+        
+    }
+    
+
+
+    type Link {
+        id: ID!
+        text: String!
+        name: String!
+        user: User!
+        
+    }
+
+
+
+   
+
+
