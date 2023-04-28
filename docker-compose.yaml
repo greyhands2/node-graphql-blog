@@ -1,0 +1,20 @@
+version: '3.5'
+
+volumes:
+  local_postgres_data: {}
+
+services:
+  postgres:
+    build: ./
+    image: postgres:11.6
+    container_name: localpostgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-graphql-course}
+      POSTGRES_USER: ${POSTGRES_USER:-starq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test1234}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+    volumes:
+      - local_postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"

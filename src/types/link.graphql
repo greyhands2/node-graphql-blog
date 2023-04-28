@@ -9,9 +9,9 @@ type Query {
 
         createLink(data: CreateLinkInput): Link!
 
-        deleteLink(id: ID!): Link!
+        deleteLink(id: ID!, userId: ID!): Link!
 
-        updateLink(id: ID!, user: ID!, data: UpdateLinkInput): Link!
+        updateLink(id: ID!, userId: ID!, data: UpdateLinkInput): Link!
     }
 
     input CreateLinkInput {
@@ -33,7 +33,7 @@ type Query {
         id: ID!
         text: String!
         name: String!
-        user: User!
+        userId: User!
         
     }
 

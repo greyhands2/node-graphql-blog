@@ -71,9 +71,10 @@ const Mutation = {
         
 
         if(!userExists) throw new GraphQLError("User does not exist")
-
+        const id = uuidv4()
         const data = {
-            id: uuidv4(),
+            id,
+            updateCheckField: `${id}${authorId}`,
             ...args.data
         }
 
@@ -94,9 +95,14 @@ const Mutation = {
         })
         return newPost
     },
-    async deletePost(parent, {id}, {prisma,pubsub}, info){
+    async deletePost(parent, {id, authorId}, {prisma,pubsub}, info){
         let res
-        await prisma.post.delete({where: {id}})
+        await prisma.post.delete({
+            where: {
+                updateCheckField: `${id}${authorId}`
+              
+            },
+          })
         .then((data) => {res=data})
         .catch((err) => {throw new GraphQLError("Something isn't as it should")})
 
@@ -106,88 +112,92 @@ const Mutation = {
                    mutation: 'DELETED',
                    data: res 
                 }
-            })
+            })      
         }
+        
         return res
     },
 
-    updatePost(parent, args, ctx, info){
-        let {id, author, data} = args
-        if(!data || !data.title && !data.body && !data.published) throw new GraphQLError("Invalid post data")
-        let {users, posts} = ctx.db
+    async updatePost(parent, {id, authorId, data}, {prisma, pubsub, gprf, dbRelationalFields}, info){
         
+        if(!data || !data.title && !data.body && !data.published) throw new GraphQLError("Invalid post data")
+        let res
+        let opArgs = {}
+
+        let queryFields = gprf({info, dbRelationalFields, type:"select"})
+        console.log(queryFields)
+        opArgs.select = queryFields.select
+        opArgs.where = {
+            updateCheckField: `${id}${authorId}`             
+        }
+
+        opArgs.data = {
+            ...data
+        }
+        
+        await prisma.post.update(opArgs)
+        .then((data)=> {res = data})
+        .catch((e)=> {console.log('errah!!!!!!', e);throw new GraphQLError("Something isn't as it should")})
         //find user
-        let user = users.find((user) => user.id === author)
-        if(!user) throw new GraphQLError("User not found")
-
-        //check if post exist
-        let post = posts.find((post) => post.id === id)
-        const originalPost = {...post}
-        if(!post) throw new GraphQLError("Post not found")
-        //if user was found check if the user is the author of the post cos only the author can update it
-        if(post.author !== author) throw new GraphQLError("The user provided is not permitted to edit this post")
+        
 
 
-        if(typeof data.title === 'string'){
-            post.title = data.title
-        }
-
-        if(typeof data.body === 'string') {
-            post.body = data.body
-        }
+       
 
 
-        if(typeof data.published === 'boolean'){
-            post.published = data.published
-            if(originalPost.published=== true && post.published === false){
-               //deleted event 
-               pubsub.publish('post', {
-                post: {
-                    mutation: 'DELETED',
-                    data: originalPost
-                }
-               })
-            } else if(originalPost.published === false && post.published === true){
-                //created event
-                pubsub.publish('post', {
-                    post: {
-                        mutation: 'CREATED',
-                        data: post
-                    }
-                   })
-            }
-        } else if(post.published === true){
-            //updated
-            pubsub.publish('post', {
-                post: {
-                    mutation: 'UPDATED',
-                    data: post
-                }
-               })
-        }
-
-        return post
+        // if(typeof data.published === 'boolean'){
+        //     post.published = data.published
+        //     if(originalPost.published === true && post.published === false){
+        //        //deleted event 
+        //        pubsub.publish('post', {
+        //         post: {
+        //             mutation: 'DELETED',
+        //             data: originalPost
+        //         }
+        //        })
+        //     } else if(originalPost.published === false && post.published === true){
+        //         //created event
+        //         pubsub.publish('post', {
+        //             post: {
+        //                 mutation: 'CREATED',
+        //                 data: post
+        //             }
+        //            })
+        //     }
+        // } else if(post.published === true){
+        //     //updated
+        //     pubsub.publish('post', {
+        //         post: {
+        //             mutation: 'UPDATED',
+        //             data: post
+        //         }
+        //        })
+        // }
+        console.log(data)
+        return res
     },
 
     async createComment(parent, args, {prisma}, info){
-        let {author, post} = args.data
+        let {authorId, postId} = args.data
         let {pubsub, dbRelationalFields, gprf} = ctx
-        let userExist = await prisma.user.findUnique({where:{id: author}})
-        let postExist = await prisma.post.findUnique({where: {id: post}})
+        let userExist = await prisma.user.findUnique({where:{id: authorId}})
+        let postExist = await prisma.post.findUnique({where: {id: postId}})
         
 
         if(!userExist) throw new GraphQLError("This user does not exist")
 
         if(!postExist) throw new GraphQLError("The post specified does not exist")
 
+        const id = uuidv4()
 
         let data = {
-            id: uuidv4(),
+            id,
+            updateCheckField: `${id}${authorId}${postId}`,
             ...args.data
         }
 
         let opArgs = {}
-        let queryFields = gprfgprf({info, dbRelationalFields, type:"select"})
+        let queryFields = gprf({info, dbRelationalFields, type:"select"})
         opArgs.select = queryFields.select
         let newComment = await prisma.comment.create({data, ...opArgs})
         
@@ -200,65 +210,62 @@ const Mutation = {
         })
         return newComment
     },
-    deleteComment(parent, args, ctx, info){
-       let {db, pubsub} = ctx
-       let commentIndex = db.comments.findIndex((comment) => comment.id === args.id) 
-       if(commentIndex === -1) throw new GraphQLError("Comment not found")
+    async deleteComment(parent, {id, authorId, postId}, {pubsub, prisma}, info){
+        
+       let res 
 
-       let [deletedComment] = db.comments.splice(commentIndex, 1);
+       await prisma.comment.delete({where: {updateCheckField: `${id}${authorId}${postId}`}})
+       .then((data) => {res=data})
+       .catch((e)=> {throw new GraphQLError("Something isn't as it should")}) 
 
-       pubsub.publish(`comment:${deletedComment.post}`, {
+       pubsub.publish(`comment:${res.post}`, {
         comment: {
             mutation: 'DELETED',
-            data: deletedComment
+            data: res
         }
        })
 
-       return deletedComment
+       return res
 
     },
-    updateComment(parent, args, ctx, info){
-        let {id, author, post, data} = args
-        if(!data || !data.text) throw new GraphQLError("Invalid comment data")
-        let {db:{users, posts, comments}, pubsub} = ctx
+    async updateComment(parent, {id, authorId, postId, data}, {prisma, dbRelationalFields, gprf, pubsub}, info){
         
-        //check if user exist
-        let user = users.find((user) => user.id === author)
-        if(!user) throw new GraphQLError("User does not exist")
+        if(!data || !data.text) throw new GraphQLError("Invalid comment data")
+        let res
+        let opArgs = {}
 
-        //check if post exists
-        let postExist = posts.find((currentPost) => currentPost.id === post)
-        if(!postExist) throw new GraphQLError("Post does not exist")
-
-        //check if comment exist
-        let comment = comments.find((comment) => comment.id === id)
-
-        if(!comment) throw new GraphQLError("Comment does not exist")
-
-        //if user was found check if the user is the author of the comment cos only the author can update it
-
-        if(comment.author !== author) throw new GraphQLError("The user provided is not permitted to edit this comment")
-
-        if(typeof data.text === 'string'){
-            comment.text = data.text
+        let queryFields = gprf({info, dbRelationalFields, type:"select"})
+     
+        opArgs.select = queryFields.select
+        opArgs.where = {
+            updateCheckField: `${id}${authorId}${postId}`           
         }
+
+        opArgs.data = {
+            ...data
+        }
+        await prisma.comment.update(opArgs)
+        .then((data) => {res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
 
         pubsub.publish(`comment:${post}`, {
             comment: {
               mutation: 'UPDATED',
-              data: comment  
+              data: res  
             }
         })
-        return comment
+        return res
     },
     async createLink(parent, args, ctx, info){
         let {userId } = args.data
         let {dbRelationalFields, prisma, gprf} = ctx
-
+        let res
         let userExist = await prisma.user.findUnique({where:{userId}})
         if(!userExist) throw new GraphQLError("This user does not exist")
+        const id = uuidv4()
         let data = {
-            id: uuidv4(),
+            id,
+            updateCheckField: `${id}${userId}`,
             ...args.data
         }
         let opArgs = {}
@@ -266,17 +273,38 @@ const Mutation = {
         let queryFields = gprf({info, dbRelationalFields, type:"select"})
         opArgs.select = queryFields.select
         
-        let newLink = await prisma.link.create({data, ...opArgs})
-       
-        return newLink
+        await prisma.link.create({data, ...opArgs})
+        .then((data)=>{res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+        return res
 
         
     }, 
-    deleteLink(){
-        return {}
+    async deleteLink(parent, {id, userId}, {prisma}, info){
+        let res
+        await prisma.link.delete({where:{updateCheckField: `${id}${userId}`}})
+        .then((data)=>{res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")}) 
+        return res
     },
-    updateLink(){
-        return {}
+    async updateLink(parent, {id, userId, data}, {prisma, gprf, dbRelationalFields}, info){
+        let res
+        let opArgs = {}
+
+        let queryFields = gprf({info, dbRelationalFields, type:"select"})
+     
+        opArgs.select = queryFields.select
+        opArgs.where = {
+            updateCheckField: `${id}${userId}` 
+        }
+        opArgs.data= {
+            ...data
+        }
+
+        await prisma.link.update(opArgs)
+        .then((data)=>{res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+        return res
     }
 }
 

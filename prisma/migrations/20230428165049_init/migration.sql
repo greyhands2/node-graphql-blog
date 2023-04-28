@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255),
@@ -13,33 +13,36 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Post" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "title" VARCHAR(100) NOT NULL,
     "body" TEXT NOT NULL,
+    "updateCheckField" TEXT NOT NULL,
     "published" BOOLEAN,
-    "authorId" UUID NOT NULL,
+    "authorId" TEXT NOT NULL,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Comment" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "text" TEXT NOT NULL,
-    "authorId" UUID NOT NULL,
-    "postId" UUID NOT NULL,
+    "updateCheckField" TEXT NOT NULL,
+    "authorId" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
 
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Link" (
-    "id" UUID NOT NULL,
+    "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "text" TEXT NOT NULL,
+    "updateCheckField" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "userId" UUID NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Link_pkey" PRIMARY KEY ("id")
 );

@@ -7,9 +7,9 @@ type Query {
 type Mutation {
     createPost(data: CreatePostInput): Post!
 
-    deletePost(id: ID!): Post!
+    deletePost(id: ID!, authorId: ID!): Post!
     
-    updatePost(id: ID!, author: ID!, data: UpdatePostInput): Post!
+    updatePost(id: ID!, authorId: ID!, data: UpdatePostInput): Post!
 
     
 }
@@ -36,7 +36,9 @@ input UpdatePostInput {
     
 }
 
-
+type deletePostResult {
+    count: Int!
+}
 
 
 type Post {

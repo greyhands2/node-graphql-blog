@@ -9,9 +9,9 @@ type Query {
 
         createComment(data: CreateCommentInput): Comment!
 
-        deleteComment(id: ID!): Comment!
+        deleteComment(id: ID!, authorId: ID!, postId: ID!): Comment!
 
-        updateComment(id: ID!, author: ID!, post: ID!, data: UpdateCommentInput): Comment!
+        updateComment(id: ID!, authorId: ID!, postId: ID!, data: UpdateCommentInput): Comment!
     }
 
     type Subscription {
@@ -24,8 +24,8 @@ type Query {
 
     input CreateCommentInput {
         text: String!
-        author: ID!
-        post: ID!
+        authorId: ID!
+        postId: ID!
     }
 
     input UpdateCommentInput {
@@ -39,8 +39,8 @@ type Query {
     type Comment {
         id: ID!
         text: String!
-        author: User!
-        post: Post!
+        authorId: User!
+        postId: Post!
     }
 
 
