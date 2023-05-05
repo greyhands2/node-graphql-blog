@@ -74,7 +74,7 @@ const Query = {
      
      opArgs.select = queryFields.select
     let posts = await prisma.post.findMany(opArgs)
-   
+        console.log('posters', posts)
     return posts
     }, 
     post(){

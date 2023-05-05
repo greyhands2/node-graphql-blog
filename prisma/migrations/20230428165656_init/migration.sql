@@ -50,6 +50,15 @@ CREATE TABLE "Link" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Post_updateCheckField_key" ON "Post"("updateCheckField");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Comment_updateCheckField_key" ON "Comment"("updateCheckField");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Link_updateCheckField_key" ON "Link"("updateCheckField");
+
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

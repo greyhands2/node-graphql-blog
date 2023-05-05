@@ -16,7 +16,7 @@ type Query {
 
     type Subscription {
        
-        comment(postId: ID!): CommentSubscriptionPayload!
+        comment(postId: ID!, authorId: ID!): CommentSubscriptionPayload!
         
     }
 
@@ -39,8 +39,10 @@ type Query {
     type Comment {
         id: ID!
         text: String!
-        authorId: User!
-        postId: Post!
+        author: User!
+        authorId: ID!
+        post: Post!
+        postId: ID!
     }
 
 

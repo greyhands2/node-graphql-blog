@@ -1,6 +1,6 @@
 import {createSchema, createYoga, createPubSub} from 'graphql-yoga'
 import { makeExecutableSchema } from '@graphql-tools/schema';
-
+import {PubSub} from 'graphql-subscriptions'
 import {createServer} from 'node:http'
 import gprf from 'graphql-parse-relation-fields'
 import db from './db'
@@ -15,7 +15,7 @@ import Subscription from './resolvers/Subscription';
 import typeDefs from './typeDefs';
 import prismaContext from './prismaContext';
 const pubsub = createPubSub()
-
+//const pubsub = new PubSub()
 //resolvers for api
 const resolvers = {
     Query,

@@ -29,7 +29,7 @@ model Post {
   title String @db.VarChar(100)
   body String 
   //this field would be a merge of id and authorId so we can use update query instead of updateMany
-  updateCheckField String
+  updateCheckField String @unique
   published Boolean?
   authorId String 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -44,7 +44,7 @@ model Comment {
   id String @id 
   text String
   //this field would be a merge of id, authorId and postId so we can use update query instead of updateMany
-  updateCheckField String
+  updateCheckField String @unique
   authorId String 
   postId String 
   author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -60,7 +60,7 @@ model Link {
   updatedAt DateTime @updatedAt
   text String 
   //this field would be a merge of id, userId so we can use update query instead of updateMany
-  updateCheckField String
+  updateCheckField String @unique
   name String
   userId String 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -1,19 +1,25 @@
 import {GraphQLError} from 'graphql'
 const Subscription = {
-   
+   //using prisma native subscriptions
     comment: {
-        subscribe(parent, args, ctx, info){
-            let {postId} = args
-            let {db, pubsub} = ctx
-            let post = db.posts.find((post) => post.id === postId)
-            if(!post) throw new GraphQLError("post not found")
+        async subscribe(parent, {postId, authorId}, {prisma, pubsub}, info){
+            
+            let res
+            await prisma.post.findUnique({where:{updateCheckField: `${postId}${authorId}`}})
+            .then((data)=>{ res=data})
+            .catch((e)=>{ throw new GraphQLError("Something is not as it should be")})
+            
 
-            return pubsub.subscribe(`comment:${postId}`) //comment:44 e.g
+            //return pubsub.asyncIterator(`comment:${postId}`)
+            return pubsub.subscribe(`comment:${postId}`)
+
+
         }
     },
     post: {
-        subscribe(parent, args, ctx, info){
-            return ctx.pubsub.subscribe('post')
+        subscribe(parent, args, {pubsub}, info){
+            //return pubsub.asyncIterator('post')
+            return pubsub.subscribe('post')
         }
     }
 }

@@ -63,8 +63,8 @@ const Mutation = {
     },
 
     async createPost(parent, args, ctx, info){
-        let {prisma, gprf, dbRelationalFields} = ctx
-        let { authorId} = args.data
+        let {prisma} = ctx
+        let { authorId, title, body, published} = args.data
         const userExists = await prisma.user.findUnique({
             where:{id: authorId}
         })
@@ -75,17 +75,22 @@ const Mutation = {
         const data = {
             id,
             updateCheckField: `${id}${authorId}`,
-            ...args.data
+            title,
+            body,
+            published,
+            author: {
+                connect:{
+                    id: authorId
+                }
+            }
         }
-
-        let opArgs = {}
-
-        let queryFields = gprf({info, dbRelationalFields, type:"select"})
-     
-        opArgs.select = queryFields.select
-
-        let newPost = await prisma.post.create({data, ...opArgs});
         
+       
+        
+        let newPost
+        await prisma.post.create({data, include:{author: true}})
+        .then((data)=>{newPost=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
         if(newPost.published === true) ctx.pubsub.publish('post', {
             post:{
                 mutation: 'CREATED',
@@ -93,6 +98,8 @@ const Mutation = {
             }
             
         })
+
+        
         return newPost
     },
     async deletePost(parent, {id, authorId}, {prisma,pubsub}, info){
@@ -102,6 +109,9 @@ const Mutation = {
                 updateCheckField: `${id}${authorId}`
               
             },
+            include:{
+                author: true
+            }
           })
         .then((data) => {res=data})
         .catch((err) => {throw new GraphQLError("Something isn't as it should")})
@@ -118,15 +128,14 @@ const Mutation = {
         return res
     },
 
-    async updatePost(parent, {id, authorId, data}, {prisma, pubsub, gprf, dbRelationalFields}, info){
+    async updatePost(parent, {id, authorId, data}, {prisma, pubsub}, info){
         
         if(!data || !data.title && !data.body && !data.published) throw new GraphQLError("Invalid post data")
-        let res
+        let updatedPost
         let opArgs = {}
 
-        let queryFields = gprf({info, dbRelationalFields, type:"select"})
-        console.log(queryFields)
-        opArgs.select = queryFields.select
+        
+        opArgs.include = {author: true}
         opArgs.where = {
             updateCheckField: `${id}${authorId}`             
         }
@@ -136,50 +145,21 @@ const Mutation = {
         }
         
         await prisma.post.update(opArgs)
-        .then((data)=> {res = data})
-        .catch((e)=> {console.log('errah!!!!!!', e);throw new GraphQLError("Something isn't as it should")})
-        //find user
+        .then((data)=> {updatedPost = data})
+        .catch((e)=> {throw new GraphQLError("Something isn't as it should")})
         
-
-
-       
-
-
-        // if(typeof data.published === 'boolean'){
-        //     post.published = data.published
-        //     if(originalPost.published === true && post.published === false){
-        //        //deleted event 
-        //        pubsub.publish('post', {
-        //         post: {
-        //             mutation: 'DELETED',
-        //             data: originalPost
-        //         }
-        //        })
-        //     } else if(originalPost.published === false && post.published === true){
-        //         //created event
-        //         pubsub.publish('post', {
-        //             post: {
-        //                 mutation: 'CREATED',
-        //                 data: post
-        //             }
-        //            })
-        //     }
-        // } else if(post.published === true){
-        //     //updated
-        //     pubsub.publish('post', {
-        //         post: {
-        //             mutation: 'UPDATED',
-        //             data: post
-        //         }
-        //        })
-        // }
-        console.log(data)
-        return res
+        pubsub.publish('post', {
+            post: {
+               mutation: 'UPDATED',
+               data: updatedPost 
+            }
+        }) 
+        return updatedPost
     },
 
-    async createComment(parent, args, {prisma}, info){
-        let {authorId, postId} = args.data
-        let {pubsub, dbRelationalFields, gprf} = ctx
+    async createComment(parent, args, {prisma, pubsub}, info){
+        let {authorId, postId, text} = args.data
+       
         let userExist = await prisma.user.findUnique({where:{id: authorId}})
         let postExist = await prisma.post.findUnique({where: {id: postId}})
         
@@ -189,32 +169,47 @@ const Mutation = {
         if(!postExist) throw new GraphQLError("The post specified does not exist")
 
         const id = uuidv4()
-
+        
         let data = {
             id,
             updateCheckField: `${id}${authorId}${postId}`,
-            ...args.data
+            
+            text,
+            
+            author:{
+                connect: {
+                    id: authorId
+                }
+            }, 
+            post: {
+                connect:{
+                    id: postId
+                }
+            },
+            
         }
-
-        let opArgs = {}
-        let queryFields = gprf({info, dbRelationalFields, type:"select"})
-        opArgs.select = queryFields.select
-        let newComment = await prisma.comment.create({data, ...opArgs})
         
-        pubsub.publish(`comment:${post}`, {
-            comment: {
+
+        // because of our subscription notification we would return complete comment data include relational fields to both the comment create event and also the create Comment request allowing graphql to sort our the fields they would both request for
+        let newComment
+        await prisma.comment.create({data, include:{ post: true, author: true}})
+        .then((data)=>{ newComment = data})
+        .catch((e)=>{ throw new GraphQLError("Something isn't as it should")})
+        console.log(newComment);
+        pubsub.publish(`comment:${postId}`, {
+            comment:{
                 mutation: 'CREATED',
                 data: newComment
             }
-            
         })
+        
         return newComment
     },
     async deleteComment(parent, {id, authorId, postId}, {pubsub, prisma}, info){
         
        let res 
 
-       await prisma.comment.delete({where: {updateCheckField: `${id}${authorId}${postId}`}})
+       await prisma.comment.delete({where: {updateCheckField: `${id}${authorId}${postId}`}, include:{author: true, post: true}})
        .then((data) => {res=data})
        .catch((e)=> {throw new GraphQLError("Something isn't as it should")}) 
 
@@ -234,9 +229,11 @@ const Mutation = {
         let res
         let opArgs = {}
 
-        let queryFields = gprf({info, dbRelationalFields, type:"select"})
-     
-        opArgs.select = queryFields.select
+        // because of our subscription notification we would return complete comment data include relational fields to both the comment create event and also the create Comment request allowing graphql to sort our the fields they would both request for
+        opArgs.include = {
+            post: true,
+            author: true
+        }
         opArgs.where = {
             updateCheckField: `${id}${authorId}${postId}`           
         }
