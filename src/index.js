@@ -3,6 +3,7 @@ import { makeExecutableSchema } from '@graphql-tools/schema';
 import {PubSub} from 'graphql-subscriptions'
 import {createServer} from 'node:http'
 import gprf from 'graphql-parse-relation-fields'
+import * as dotenv from 'dotenv'
 import db from './db'
 import dbRelationalFields from "./helpers/db-relational-fields";
 import Query from './resolvers/Query'
@@ -14,6 +15,7 @@ import Comment from './resolvers/Comment';
 import Subscription from './resolvers/Subscription';
 import typeDefs from './typeDefs';
 import prismaContext from './prismaContext';
+dotenv.config()
 const pubsub = createPubSub()
 //const pubsub = new PubSub()
 //resolvers for api
@@ -37,15 +39,18 @@ const main = async() => {
     typeDefs,
     resolvers
     }),
-    context: {
+    context({request}){
+      
+      return {
         db,
         pubsub,
         gprf,
         prisma:prismaContext,
-        dbRelationalFields
-        
+        dbRelationalFields,
+        request 
         
     }
+    } 
 
 })
   const server = createServer(yoga);

@@ -1,9 +1,10 @@
 import {GraphQLError} from 'graphql'
+import getUserId from '../helpers/getUserId'
 const Subscription = {
    //using prisma native subscriptions
     comment: {
-        async subscribe(parent, {postId, authorId}, {prisma, pubsub}, info){
-            
+        async subscribe(parent, {postId}, {prisma, pubsub, request}, info){
+            const authorId = getUserId(request)
             let res
             await prisma.post.findUnique({where:{updateCheckField: `${postId}${authorId}`}})
             .then((data)=>{ res=data})

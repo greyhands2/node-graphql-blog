@@ -9,14 +9,14 @@ type Query {
 
         createComment(data: CreateCommentInput): Comment!
 
-        deleteComment(id: ID!, authorId: ID!, postId: ID!): Comment!
+        deleteComment(id: ID!, postId: ID!): Comment!
 
-        updateComment(id: ID!, authorId: ID!, postId: ID!, data: UpdateCommentInput): Comment!
+        updateComment(id: ID!, postId: ID!, data: UpdateCommentInput): Comment!
     }
 
     type Subscription {
        
-        comment(postId: ID!, authorId: ID!): CommentSubscriptionPayload!
+        comment(postId: ID!): CommentSubscriptionPayload!
         
     }
 
@@ -24,7 +24,7 @@ type Query {
 
     input CreateCommentInput {
         text: String!
-        authorId: ID!
+        
         postId: ID!
     }
 
