@@ -1,6 +1,6 @@
 type Query {
         
-        me: User!
+        me: UserReturn!
         
         users(query: String): [User!]!
          
@@ -35,6 +35,18 @@ type Query {
     type AuthPayload{
         token: String!
         user: User!
+    }
+
+
+    type UserReturn {
+       id: ID
+       name: String
+       email: String
+       password: String
+       age: Int
+       posts: [Post!]
+       comments: [Comment!] 
+       links: [Link!]
     }
     
     type User {

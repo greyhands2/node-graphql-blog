@@ -1,4 +1,5 @@
-
+import {GraphQLError} from 'graphql'
+import getUserId from '../helpers/getUserId'
 
 
 const Query = {
@@ -8,7 +9,7 @@ const Query = {
      let opArgs = {}
       if(args.query){
         opArgs.where = {
-            OR:[
+            OR: [
                 {
                     name:{
                         contains: args.query
@@ -40,23 +41,27 @@ const Query = {
     return users
     },
     
-    me(){
-     return {
-         id: "das7y87dasdas1121",
-         name: "Osas",
-         email: "osas@gmail.com",
-         age:33
-     }
+    async me(parent, args, {prisma, request, gprf, dbRelationalFields}, info){
+        const userId = getUserId(request)
+        let opArgs = {}
+        let queryFields = gprf({info, dbRelationalFields, type:"select"})
+        let res
+        opArgs.select = queryFields.select
+        opArgs.where= {id: userId}
+        await prisma.user.findUnique(opArgs)
+        .then((data)=>{res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+            
+        return res
     },
     async posts(parent, args, ctx, info){
         let {prisma, gprf, dbRelationalFields} = ctx
        
         
         let opArgs = {}
-       
+        opArgs.where={published: true}
         if(args.query){
-            opArgs.where = {
-                OR: [
+            opArgs.where.OR = [
                     {
                         title:{
                             contains: args.query
@@ -68,7 +73,7 @@ const Query = {
                         }
                     }
                 ]
-            }
+            
         }
     let queryFields = gprf({info, dbRelationalFields, type:"select"})
      
@@ -76,14 +81,26 @@ const Query = {
     let posts = await prisma.post.findMany(opArgs)
         console.log('posters', posts)
     return posts
+    },
+    async myPosts(){
+        
     }, 
-    post(){
-     return {
-         id: "wer234e2323",
-         title: "Uncle Gazpacho",
-         body: "Yeah the boys at the marine like to call this one uncle Gazpacho, I call it the ex wife, capable of reducing the population of every standing structure to zero",
-         published: false
-     }
+    async post(parent, {id}, {prisma, request, dbRelationalFields, gprf}, info){
+        const userId = getUserId(request, false);
+        let opArgs = {}
+        let queryFields = gprf({info, dbRelationalFields, type:"select"}) 
+      
+        opArgs.select = queryFields.select
+        opArgs.where= {id, OR:[{authorId: userId}, {published: true}]}
+        let res
+       await prisma.post.findMany(opArgs)
+      
+        .then((data)=> {res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+         
+        
+        return res.length>0 ? res[0] : {}
+    
     },
     async comments(parent, args, ctx, info){
      let {prisma, gprf, dbRelationalFields} = ctx

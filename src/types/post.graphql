@@ -1,7 +1,9 @@
 type Query {
         
     posts(query: String): [Post!]!
-    post: Post!    
+    myPosts: [Post!]!
+    post(id: ID!): PostReturn!
+
 }
 
 type Mutation {
@@ -40,6 +42,15 @@ type deletePostResult {
     count: Int!
 }
 
+type PostReturn {
+    id: ID
+    title: String
+    body: String
+    published: Boolean
+    authorId: ID
+    author: User
+    comments: [Comment!] 
+}
 
 type Post {
     id: ID!

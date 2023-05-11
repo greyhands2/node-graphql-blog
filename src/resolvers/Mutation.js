@@ -36,10 +36,10 @@ const Mutation = {
         if(!email || !password) throw new GraphQLError("Email and Password are required")
         
         let user = await prisma.user.findUnique({where:{email: email}})
-        if(!user) throw new GraphQLError("1Something isn't as it should")
+        if(!user) throw new GraphQLError("Something isn't as it should")
         console.log('user', user)
         let didPasswordMatch = await bcrypt.compare(password, user.password)
-        if(!didPasswordMatch) throw new GraphQLError("2Something isn't as it should")
+        if(!didPasswordMatch) throw new GraphQLError("Something isn't as it should")
         
         return {
             user,
