@@ -82,8 +82,32 @@ const Query = {
         console.log('posters', posts)
     return posts
     },
-    async myPosts(){
-        
+    async myPosts(parent, args, {prisma, request, dbRelationalFields, gprf}, info){
+        const userId = getUserId(request)
+        let opArgs={}, res
+        opArgs.where={authorId:userId}
+        if(args.query){
+            opArgs.where.OR = [
+                    {
+                        title:{
+                            contains: args.query
+                        }
+                    },
+                    {
+                        body: {
+                            contains: args.query
+                        }
+                    }
+                ]
+            
+        }
+        let queryFields = gprf({info, dbRelationalFields, type:"select"}) 
+      
+        opArgs.select = queryFields.select
+        await prisma.post.findMany(opArgs)
+        .then((data)=>{res=data})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+        return res
     }, 
     async post(parent, {id}, {prisma, request, dbRelationalFields, gprf}, info){
         const userId = getUserId(request, false);
