@@ -1,48 +1,32 @@
-import {createSchema, createYoga, createPubSub} from 'graphql-yoga'
-import { makeExecutableSchema } from '@graphql-tools/schema';
-import {PubSub} from 'graphql-subscriptions'
+import {createYoga, createPubSub} from 'graphql-yoga'
+import { makeExecutableSchema} from '@graphql-tools/schema';
+import { gql } from 'graphql-tag';
+import {applyMiddleware} from 'graphql-middleware'
+import resolvers from './resolvers/index'
+
 import {createServer} from 'node:http'
 import gprf from 'graphql-parse-relation-fields'
 import * as dotenv from 'dotenv'
-import db from './db'
+
 import dbRelationalFields from "./helpers/db-relational-fields";
-import Query from './resolvers/Query'
-import Mutation from './resolvers/Mutation';
-import User from './resolvers/User';
-import Post from './resolvers/Post';
-import Link from './resolvers/Link';
-import Comment from './resolvers/Comment';
-import Subscription from './resolvers/Subscription';
+import userFragmentMiddleware from './middleware/userFragmentMiddleware'
 import typeDefs from './typeDefs';
 import prismaContext from './prismaContext';
+
 dotenv.config()
 const pubsub = createPubSub()
-//const pubsub = new PubSub()
-//resolvers for api
-const resolvers = {
-    Query,
-    Mutation,
-    Subscription,
-    User,
-    Post,
-    Comment,
-    Link 
-}
-
-
 
 const main = async() => {
     
- 
+  const schema = makeExecutableSchema({typeDefs, resolvers})
+  const schemaWithMiddleware = applyMiddleware(schema, userFragmentMiddleware)
   const yoga = createYoga({
-    schema: makeExecutableSchema({
-    typeDefs,
-    resolvers
-    }),
+    schema: schemaWithMiddleware,
+    
     context({request}){
       
       return {
-        db,
+        
         pubsub,
         gprf,
         prisma:prismaContext,
@@ -50,7 +34,8 @@ const main = async() => {
         request 
         
     }
-    } 
+    },
+  
 
 })
   const server = createServer(yoga);

@@ -1,4 +1,4 @@
-type Query {
+     type Query {
         
         me: UserReturn!
         
@@ -50,9 +50,9 @@ type Query {
     }
     
     type User {
-       id: ID!
+       id: ID
        name: String!
-       email: String!
+       email: String
        password: String!
        age: Int
        posts: [Post!]!
@@ -60,7 +60,16 @@ type Query {
        links: [Link!]!
     }
 
-   
+
+    
+
+
+
+
+
+
+    
+    
 
    
 

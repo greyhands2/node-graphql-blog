@@ -26,7 +26,7 @@ const Mutation = {
         opArgs.select = queryFields.select
 
         let newUser = await prisma.user.create({data});
-        
+        console.log(newUser)
         return {
             user:newUser,
             token: jwt.sign({userId: newUser.id}, process.env.JWT_TOKEN)

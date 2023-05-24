@@ -5,6 +5,28 @@ import getUserId from '../helpers/getUserId'
 const Query = {
        
     async users(parent, args, ctx, info){
+    const userId = getUserId(ctx.request, false)
+    let selectionsArr, idFieldExists 
+    if(userId){
+          
+        selectionsArr = info.fieldNodes[0].selectionSet.selections;
+        idFieldExists = selectionsArr.some((selection) => selection.name.value === 'id');
+        
+           
+            if(!idFieldExists ) {
+                    
+                 
+                selectionsArr.push({
+                    kind: 'Field',
+                    name: { kind: 'Name', value: 'id' },
+                })
+                console.log('hi')
+                ctx.wasIdInduced = true 
+            } 
+        
+            
+    }     
+           
      let {prisma, gprf, dbRelationalFields} = ctx;
      let opArgs = {}
       if(args.query){
@@ -34,11 +56,11 @@ const Query = {
      let queryFields = gprf({info, dbRelationalFields, type:"select"})
      
      opArgs.select = queryFields.select
-    
+     
      let users = await prisma.user.findMany(opArgs)
          
-    console.log(users)
-    return users
+     if(userId && ctx.wasIdInduced ) selectionsArr.pop()
+     return users
     },
     
     async me(parent, args, {prisma, request, gprf, dbRelationalFields}, info){

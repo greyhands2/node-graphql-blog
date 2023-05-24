@@ -19,6 +19,12 @@
     "@graphql-tools/schema": "^9.0.16",
 
 
+    "@graphql-tools/stitch": "^9.0.0",
+
+
+    "@graphql-tools/utils": "^10.0.0",
+
+
     "@prisma/client": "^4.12.0",
 
 
@@ -37,16 +43,16 @@
     "dotenv": "^16.0.3",
 
 
-    "graphql-fields": "^2.0.3",
+    "graphql-middleware": "^6.1.34",
 
 
-    "graphql-parse-fields": "^1.2.0",
-
-
-    "graphql-parse-relation-fields": "^1.0.11",
+    "graphql-parse-relation-fields": "^2.0.3",
 
 
     "graphql-subscriptions": "^2.0.0",
+
+
+    "graphql-tag": "^2.12.6",
 
 
     "graphql-yoga": "^3.5.1",
