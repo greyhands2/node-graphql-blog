@@ -106,7 +106,7 @@ const Mutation = {
             title,
             body,
             published,
-            author: {
+            author: { 
                 connect:{
                     id: userId
                 }
@@ -159,7 +159,7 @@ const Mutation = {
 
     async updatePost(parent, {id, data}, {prisma, pubsub, request}, info){
         
-        if(!data || !data.title && !data.body && !data.published) throw new GraphQLError("Invalid post data")
+        if(!data || !data.title && !data.body && typeof data.published !== 'boolean') throw new GraphQLError("Invalid post data")
         const userId = getUserId(request)
         let updatedPost
         let opArgs = {}
@@ -169,7 +169,7 @@ const Mutation = {
         opArgs.where = {
             updateCheckField: `${id}${userId}`             
         }
-
+        
         opArgs.data = {
             ...data
         }
@@ -177,7 +177,9 @@ const Mutation = {
         await prisma.post.update(opArgs)
         .then((data)=> {updatedPost = data})
         .catch((e)=> {throw new GraphQLError("Something isn't as it should")})
-        
+        if(!!data.published === true && data.published === false ){
+            await prisma.comment.deleteMany({where:{postId: updatedPost.id}})
+        }
         pubsub.publish('post', {
             post: {
                mutation: 'UPDATED',
@@ -193,11 +195,11 @@ const Mutation = {
         let userExist = await prisma.user.findUnique({where:{id: userId}})
         let postExist = await prisma.post.findUnique({where: {id: postId}})
         
-
+        
         if(!userExist) throw new GraphQLError("This user does not exist")
 
         if(!postExist) throw new GraphQLError("The post specified does not exist")
-
+        if(postExist.published === true) throw new GraphQLError("You are not allowed to comment under this post")
         const id = uuidv4()
         
         let data = {
@@ -212,7 +214,7 @@ const Mutation = {
                 }
             }, 
             post: {
-                connect:{
+                connect: {
                     id: postId
                 }
             },
