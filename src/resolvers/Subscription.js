@@ -22,7 +22,15 @@ const Subscription = {
             //return pubsub.asyncIterator('post')
             return pubsub.subscribe('post')
         }
-    }
+    },
+
+    myPost: {
+        subscribe(parent, args, {pubsub, request}, info){
+            const userId = getUserId(request)
+            
+            return pubsub.subscribe(`myPost:${userId}`)  
+        }
+    }, 
 }
 
 export {Subscription as default}

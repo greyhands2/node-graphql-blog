@@ -34,7 +34,7 @@ const User = {
  posts: {
     resolve({posts}, args, {request}, info){
         const userId = getUserId(request, false)
-        console.log(userId)
+        
         if(posts && Array.isArray(posts) && posts.length > 0){
             return posts.filter((post) => (userId ? (post.authorId.toString() === userId.toString() || post.published === true) : (post.published === true)))
 

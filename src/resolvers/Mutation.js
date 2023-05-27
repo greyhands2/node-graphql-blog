@@ -161,6 +161,7 @@ const Mutation = {
         
         if(!data || !data.title && !data.body && typeof data.published !== 'boolean') throw new GraphQLError("Invalid post data")
         const userId = getUserId(request)
+        console.log('check2', userId)
         let updatedPost
         let opArgs = {}
 
@@ -180,12 +181,28 @@ const Mutation = {
         if(!!data.published === true && data.published === false ){
             await prisma.comment.deleteMany({where:{postId: updatedPost.id}})
         }
-        pubsub.publish('post', {
-            post: {
+        delete updatedPost.author.password
+        delete updatedPost.author.createdAt
+        delete updatedPost.author.updatedAt
+        delete updatedPost.author.verified
+        if(updatedPost.published === true){
+            pubsub.publish('post', {
+                post: {
+                   mutation: 'UPDATED',
+                   data: updatedPost 
+                }
+            })
+        }
+        
+
+        
+        pubsub.publish(`myPost:${userId}`, {
+            myPost: {
                mutation: 'UPDATED',
                data: updatedPost 
             }
         }) 
+
         return updatedPost
     },
 
