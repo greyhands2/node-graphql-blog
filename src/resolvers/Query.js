@@ -1,10 +1,25 @@
 import {GraphQLError} from 'graphql'
 import getUserId from '../helpers/getUserId'
+const applyTakeConstraints = ({
+    min,
+    max,
+    value,
+  }) => {
+    if (value < min || value > max) {
+      throw new GraphQLError(
+        `'take' argument value '${value}' is outside the valid range of '${min}' to '${max}'.`
+      )
+    }
+    return value
+  }
+const applySkipConstraints = ({
 
-
+}) => {
+    
+}
 const Query = {
        
-    async users(parent, args, ctx, info){
+    async users(parent, {query, skip, take, cursor}, ctx, info){
     const userId = getUserId(ctx.request, false)
     let selectionsArr, idFieldExists 
     if(userId){
@@ -29,17 +44,17 @@ const Query = {
            
      let {prisma, gprf, dbRelationalFields} = ctx;
      let opArgs = {}
-      if(args.query){
+      if(query){
         opArgs.where = {
             OR: [
                 {
                     name:{
-                        contains: args.query
+                        contains: query
                     }
                 },
                 {
                     email: {
-                        contains: args.query
+                        contains: query
                     }
                 } 
 
@@ -56,7 +71,14 @@ const Query = {
      let queryFields = gprf({info, dbRelationalFields, type:"select"})
      
      opArgs.select = queryFields.select
-     
+     take = applyTakeConstraints({
+        min: 1,
+        max: 5,
+        value: take ? take : 5
+      })
+     opArgs.skip = skip
+     opArgs.take = take
+     opArgs.cursor = {id: cursor}
      let users = await prisma.user.findMany(opArgs)
          
      if(userId && ctx.wasIdInduced ) selectionsArr.pop()
@@ -76,48 +98,56 @@ const Query = {
             
         return res
     },
-    async posts(parent, args, ctx, info){
+    async posts(parent, {query, skip, take, cursor}, ctx, info){
         let {prisma, gprf, dbRelationalFields} = ctx
        
         
         let opArgs = {}
         opArgs.where={published: true}
-        if(args.query){
+        if(query){
             opArgs.where.OR = [
                     {
                         title:{
-                            contains: args.query
+                            contains: query
                         }
                     },
                     {
                         body: {
-                            contains: args.query
+                            contains: query
                         }
                     }
                 ]
             
         }
     let queryFields = gprf({info, dbRelationalFields, type:"select"})
-     
+    
      opArgs.select = queryFields.select
+     take = applyTakeConstraints({
+        min: 1,
+        max: 5,
+        value: take ? take : 5
+      })
+     opArgs.skip = skip
+     opArgs.take = take
+     opArgs.cursor = {id: cursor}
     let posts = await prisma.post.findMany(opArgs)
         console.log('posters', posts)
     return posts
     },
-    async myPosts(parent, args, {prisma, request, dbRelationalFields, gprf}, info){
+    async myPosts(parent, {query, skip, take, cursor}, {prisma, request, dbRelationalFields, gprf}, info){
         const userId = getUserId(request)
         let opArgs={}, res
         opArgs.where={authorId:userId}
-        if(args.query){
+        if(query){
             opArgs.where.OR = [
                     {
                         title:{
-                            contains: args.query
+                            contains: query
                         }
                     },
                     {
                         body: {
-                            contains: args.query
+                            contains: query
                         }
                     }
                 ]
@@ -126,6 +156,15 @@ const Query = {
         let queryFields = gprf({info, dbRelationalFields, type:"select"}) 
       
         opArgs.select = queryFields.select
+        opArgs.select = queryFields.select
+     take = applyTakeConstraints({
+        min: 1,
+        max: 5,
+        value: take ? take : 5
+      })
+     opArgs.skip = skip
+     opArgs.take = take
+     opArgs.cursor = {id: cursor}
         await prisma.post.findMany(opArgs)
         .then((data)=>{res=data})
         .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
@@ -148,35 +187,43 @@ const Query = {
         return res.length>0 ? res[0] : {}
     
     },
-    async comments(parent, args, ctx, info){
+    async comments(parent, {query, skip, take, cursor}, ctx, info){
      let {prisma, gprf, dbRelationalFields} = ctx
      
      let opArgs = {}
      
-     if(args.query){
+     if(query){
         opArgs.where = {
            
              text: {
-                    contains: args.query
+                    contains: query
                 }
             }   
     }       
     let queryFields = gprf({info, dbRelationalFields, type:"select"})
      
     opArgs.select = queryFields.select
+    take = applyTakeConstraints({
+        min: 1,
+        max: 5,
+        value: take ? take : 5
+      })
+     opArgs.skip = skip
+     opArgs.take = take
+     opArgs.cursor = {id: cursor}
     let comments = await prisma.comment.findMany(opArgs);
     return comments
     },
-    async links(parent, args, ctx, info){
+    async links(parent, {query, skip, take, cursor}, ctx, info){
         let {prisma, gprf, dbRelationalFields} = ctx
      
      let opArgs = {}
      
-     if(args.query){
+     if(query){
         opArgs.where = {
            
              name:   {
-                    contains: args.query
+                    contains: query
                 }
             }   
     }       
@@ -184,6 +231,14 @@ const Query = {
     let queryFields = gprf({info, dbRelationalFields, type:"select"})
      
     opArgs.select = queryFields.select
+    take = applyTakeConstraints({
+        min: 1,
+        max: 5,
+        value: take ? take : 5
+      })
+     opArgs.skip = skip
+     opArgs.take = take
+     opArgs.cursor = {id: cursor}
     let links = await prisma.link.findMany(opArgs);
     return links
     }

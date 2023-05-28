@@ -1,13 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import {GraphQLError} from 'graphql'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
+
 import getUserId from '../helpers/getUserId'
+import generateJWT from '../helpers/generateJWT'
+import hashPassword from '../helpers/hashPassword'
 const Mutation = {
     async createUser(parent, args, ctx, info){
-        if(args.data.password.length < 8) throw new GraphQLError("Password must be 8 characters or longer")
-
-        const password = await bcrypt.hash(args.data.password, 10)
+       
+        const password = await hashPassword(args.data.password)
         let {prisma, gprf,dbRelationalFields} = ctx
         const emailTaken = await prisma.user.findUnique({
             where:{email: args.data.email}
@@ -29,7 +30,7 @@ const Mutation = {
         console.log(newUser)
         return {
             user:newUser,
-            token: jwt.sign({userId: newUser.id}, process.env.JWT_TOKEN)
+            token: generateJWT(newUser.id)
         }
     },
     async login(parent, {email, password}, {prisma}, info){
@@ -43,7 +44,7 @@ const Mutation = {
         
         return {
             user,
-            token: jwt.sign({userId: user.id}, process.env.JWT_TOKEN )
+            token: generateJWT(user.id)
         }
     },
     async deleteUser(parent, args, ctx, info){
@@ -67,7 +68,10 @@ const Mutation = {
        let {data} = args
        let {prisma, dbRelationalFields, gprf, request} = ctx
        const userId = getUserId(request)
-       if(!data || !data.email && !data.age && !data.name) throw new GraphQLError("Invalid user update data") 
+       if(typeof data.password === 'string'){
+         data.password = await hashPassword(data.password)
+       }
+       if(!data || !data.email && !data.age && !data.name && !data.password) throw new GraphQLError("Invalid user update data") 
        let opArgs = {}
 
        let queryFields = gprf({info, dbRelationalFields, type:"select"})

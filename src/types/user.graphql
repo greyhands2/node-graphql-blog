@@ -2,7 +2,7 @@
         
         me: UserReturn!
         
-        users(query: String): [User!]!
+        users(query: String, skip: Int, take: Int, cursor: String): [User!]!
          
     }
 
@@ -12,6 +12,8 @@
         deleteUser: User!
 
         updateUser(data: UpdateUserInput): User!
+
+        
 
         
     }
@@ -30,6 +32,7 @@
         email: String
         age: Int
         password: String
+
     }
 
     type AuthPayload{

@@ -1,7 +1,7 @@
 type Query {
         
         
-        comments(query: String): [Comment!]! 
+        comments(query: String, skip: Int, take: Int, cursor: String): [Comment!]! 
     }
 
     type Mutation {
