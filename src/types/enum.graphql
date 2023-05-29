@@ -1,5 +1,14 @@
- enum MutationType {
-        CREATED
-        UPDATED
-        DELETED
-    }
+enum MutationType {
+    CREATED
+    UPDATED
+    DELETED
+}
+
+
+
+enum Sort {
+    asc
+    desc
+}
+
+

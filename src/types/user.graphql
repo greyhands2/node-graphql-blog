@@ -1,67 +1,78 @@
-     type Query {
-        
-        me: UserReturn!
-        
-        users(query: String, skip: Int, take: Int, cursor: String): [User!]!
-         
-    }
-
-    type Mutation {
-        createUser(data: CreateUserInput): AuthPayload!
-        login(email: String!, password: String!): AuthPayload!
-        deleteUser: User!
-
-        updateUser(data: UpdateUserInput): User!
-
-        
-
-        
-    }
-
-   
-
-    input CreateUserInput {
-        name: String!
-        email: String!
-        age: Int
-        password: String!
-    }
-
-    input UpdateUserInput {
-        name: String
-        email: String
-        age: Int
-        password: String
-
-    }
-
-    type AuthPayload{
-        token: String!
-        user: User!
-    }
-
-
-    type UserReturn {
-       id: ID
-       name: String
-       email: String
-       password: String
-       age: Int
-       posts: [Post!]
-       comments: [Comment!] 
-       links: [Link!]
-    }
+scalar DateTime 
+     
+type Query {
     
-    type User {
-       id: ID
-       name: String!
-       email: String
-       password: String!
-       age: Int
-       posts: [Post!]!
-       comments: [Comment!]! 
-       links: [Link!]!
-    }
+    me: UserReturn!
+    
+    users(query: String, skip: Int, take: Int, cursor: String, orderBy: UserOrderByInput): [User!]!
+        
+}
+
+type Mutation {
+    createUser(data: CreateUserInput): AuthPayload!
+    login(email: String!, password: String!): AuthPayload!
+    deleteUser: User!
+
+    updateUser(data: UpdateUserInput): User!
+
+    
+
+    
+}
+
+input UserOrderByInput {
+    createdAt: Sort
+    updatedAt: Sort
+
+}
+
+input CreateUserInput {
+    name: String!
+    email: String!
+    age: Int
+    password: String!
+}
+
+input UpdateUserInput {
+    name: String
+    email: String
+    age: Int
+    password: String
+
+}
+
+type AuthPayload{
+    token: String!
+    user: User!
+}
+
+
+type UserReturn {
+    id: ID
+    name: String
+    email: String
+    password: String
+    age: Int
+    posts: [Post!]
+    comments: [Comment!] 
+    links: [Link!]
+}
+
+
+
+
+type User {
+    id: ID
+    name: String!
+    email: String
+    password: String!
+    age: Int
+    posts: [Post!]!
+    comments: [Comment!]! 
+    links: [Link!]!
+    updatedAt: DateTime
+    createdAt: DateTime
+}
 
 
     

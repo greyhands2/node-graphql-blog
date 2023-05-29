@@ -1,59 +1,70 @@
+scalar DateTime 
 type Query {
         
         
-        comments(query: String, skip: Int, take: Int, cursor: String): [Comment!]! 
-    }
+    comments(query: String, skip: Int, take: Int, cursor: String, orderBy: CommentOrderByInput): [Comment!]! 
+}
 
-    type Mutation {
-        
-
-        createComment(data: CreateCommentInput): Comment!
-
-        deleteComment(id: ID!, postId: ID!): Comment!
-
-        updateComment(id: ID!, postId: ID!, data: UpdateCommentInput): Comment!
-    }
-
-    type Subscription {
-       
-        comment(postId: ID!): CommentSubscriptionPayload!
-        
-    }
-
+type Mutation {
     
 
-    input CreateCommentInput {
-        text: String!
-        
-        postId: ID!
-    }
+    createComment(data: CreateCommentInput): Comment!
 
-    input UpdateCommentInput {
-        text: String
-        
-        
-    }
+    deleteComment(id: ID!, postId: ID!): Comment!
+
+    updateComment(id: ID!, postId: ID!, data: UpdateCommentInput): Comment!
+}
+
+type Subscription {
     
-
-
-    type Comment {
-        id: ID!
-        text: String!
-        author: User!
-        authorId: ID!
-        post: Post!
-        postId: ID!
-    }
-
-
-
-   
-
+    comment(postId: ID!): CommentSubscriptionPayload!
     
+}
 
-    type CommentSubscriptionPayload {
-        mutation: MutationType!
-        data: Comment!
-    }
+
+
+input CommentOrderByInput {
+    createdAt: Sort
+    updatedAt: Sort
+
+}
+
+
+
+input CreateCommentInput {
+    text: String!
+    
+    postId: ID!
+}
+
+input UpdateCommentInput {
+    text: String
+    
+    
+}
+
+
+
+type Comment {
+    id: ID!
+    text: String!
+    author: User!
+    authorId: ID!
+    post: Post!
+    postId: ID!
+    updatedAt: DateTime!
+    createdAt: DateTime!
+}
+
+
+
+
+
+
+
+type CommentSubscriptionPayload {
+    mutation: MutationType!
+    data: Comment!
+}
 
 

@@ -1,41 +1,51 @@
+scalar DateTime 
 type Query {
         
         
-        links(query: String, skip: Int, take: Int, cursor: String): [Link!]! 
-    }
+    links(query: String, skip: Int, take: Int, cursor: String, orderBy: LinkOrderByInput): [Link!]! 
+}
 
-    type Mutation {
-        
-
-        createLink(data: CreateLinkInput): Link!
-
-        deleteLink(id: ID!): Link!
-
-        updateLink(id: ID!, data: UpdateLinkInput): Link!
-    }
-
-    input CreateLinkInput {
-        text: String!
-        
-        name: String!
-        
-    }
-
-    input UpdateLinkInput {
-        text: String
-        name: String
-        
-    }
+type Mutation {
     
 
+    createLink(data: CreateLinkInput): Link!
 
-    type Link {
-        id: ID!
-        text: String!
-        name: String!
-        userId: User!
-        
-    }
+    deleteLink(id: ID!): Link!
+
+    updateLink(id: ID!, data: UpdateLinkInput): Link!
+}
+
+
+input LinkOrderByInput {
+    createdAt: Sort
+    updatedAt: Sort
+
+}
+
+
+input CreateLinkInput {
+    text: String!
+    
+    name: String!
+    
+}
+
+input UpdateLinkInput {
+    text: String
+    name: String
+    
+}
+
+
+
+type Link {
+    id: ID!
+    text: String!
+    name: String!
+    userId: User!
+    updatedAt: DateTime!
+    createdAt: DateTime!
+}
 
 
 

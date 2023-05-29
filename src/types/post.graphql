@@ -1,7 +1,8 @@
+scalar DateTime 
 type Query {
         
-    posts(query: String, skip: Int, take: Int, cursor: String): [Post!]!
-    myPosts(query: String, skip: Int, take: Int, cursor: String): [Post!]!
+    posts(query: String, skip: Int, take: Int, cursor: String, orderBy: PostOrderByInput): [Post!]!
+    myPosts(query: String, skip: Int, take: Int, cursor: String, orderBy: PostOrderByInput): [Post!]!
     post(id: ID!): PostReturn!
 
 }
@@ -23,7 +24,11 @@ type Subscription {
     myPost: PostSubscriptionPayload!
 }
 
+input PostOrderByInput {
+    createdAt: Sort
+    updatedAt: Sort
 
+}
 
 input CreatePostInput {
     title: String!
@@ -50,7 +55,9 @@ type PostReturn {
     published: Boolean
     authorId: ID
     author: User
-    comments: [Comment!] 
+    comments: [Comment!]
+    updatedAt: DateTime!
+    createdAt: DateTime! 
 }
 
 type Post {
@@ -61,6 +68,8 @@ type Post {
     authorId: ID!
     author: User
     comments: [Comment!]!
+    updatedAt: DateTime!
+    createdAt: DateTime!
    
 }
 

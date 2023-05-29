@@ -1,6 +1,6 @@
 import {createYoga, createPubSub} from 'graphql-yoga'
 import { makeExecutableSchema} from '@graphql-tools/schema';
-import { gql } from 'graphql-tag';
+
 import {applyMiddleware} from 'graphql-middleware'
 import resolvers from './resolvers/index'
 

@@ -19,7 +19,8 @@ const applySkipConstraints = ({
 }
 const Query = {
        
-    async users(parent, {query, skip, take, cursor}, ctx, info){
+    async users(parent, {query, skip, take, cursor, orderBy}, ctx, info){
+        
     const userId = getUserId(ctx.request, false)
     let selectionsArr, idFieldExists 
     if(userId){
@@ -78,7 +79,8 @@ const Query = {
       })
      opArgs.skip = skip
      opArgs.take = take
-     opArgs.cursor = {id: cursor}
+    if(cursor) [opArgs.cursor  = {id: cursor}]
+    if(orderBy) [opArgs.orderBy= orderBy]  
      let users = await prisma.user.findMany(opArgs)
          
      if(userId && ctx.wasIdInduced ) selectionsArr.pop()
@@ -98,7 +100,7 @@ const Query = {
             
         return res
     },
-    async posts(parent, {query, skip, take, cursor}, ctx, info){
+    async posts(parent, {query, skip, take, cursor, orderBy}, ctx, info){
         let {prisma, gprf, dbRelationalFields} = ctx
        
         
@@ -129,12 +131,13 @@ const Query = {
       })
      opArgs.skip = skip
      opArgs.take = take
-     opArgs.cursor = {id: cursor}
+     if(cursor) [opArgs.cursor  = {id: cursor}]
+     if(orderBy) [opArgs.orderBy= orderBy] 
     let posts = await prisma.post.findMany(opArgs)
         console.log('posters', posts)
     return posts
     },
-    async myPosts(parent, {query, skip, take, cursor}, {prisma, request, dbRelationalFields, gprf}, info){
+    async myPosts(parent, {query, skip, take, cursor, orderBy}, {prisma, request, dbRelationalFields, gprf}, info){
         const userId = getUserId(request)
         let opArgs={}, res
         opArgs.where={authorId:userId}
@@ -164,7 +167,8 @@ const Query = {
       })
      opArgs.skip = skip
      opArgs.take = take
-     opArgs.cursor = {id: cursor}
+     if(cursor) [opArgs.cursor  = {id: cursor}]
+     if(orderBy) [opArgs.orderBy= orderBy] 
         await prisma.post.findMany(opArgs)
         .then((data)=>{res=data})
         .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
@@ -187,7 +191,7 @@ const Query = {
         return res.length>0 ? res[0] : {}
     
     },
-    async comments(parent, {query, skip, take, cursor}, ctx, info){
+    async comments(parent, {query, skip, take, cursor, orderBy}, ctx, info){
      let {prisma, gprf, dbRelationalFields} = ctx
      
      let opArgs = {}
@@ -210,11 +214,12 @@ const Query = {
       })
      opArgs.skip = skip
      opArgs.take = take
-     opArgs.cursor = {id: cursor}
+     if(cursor) [opArgs.cursor  = {id: cursor}]
+     if(orderBy) [opArgs.orderBy= orderBy] 
     let comments = await prisma.comment.findMany(opArgs);
     return comments
     },
-    async links(parent, {query, skip, take, cursor}, ctx, info){
+    async links(parent, {query, skip, take, cursor, orderBy}, ctx, info){
         let {prisma, gprf, dbRelationalFields} = ctx
      
      let opArgs = {}
@@ -238,7 +243,8 @@ const Query = {
       })
      opArgs.skip = skip
      opArgs.take = take
-     opArgs.cursor = {id: cursor}
+     if(cursor) [opArgs.cursor  = {id: cursor}]
+     if(orderBy) [opArgs.orderBy= orderBy] 
     let links = await prisma.link.findMany(opArgs);
     return links
     }
