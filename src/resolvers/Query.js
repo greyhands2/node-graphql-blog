@@ -80,7 +80,8 @@ const Query = {
      opArgs.skip = skip
      opArgs.take = take
     if(cursor) [opArgs.cursor  = {id: cursor}]
-    if(orderBy) [opArgs.orderBy= orderBy]  
+    if(orderBy) [opArgs.orderBy= orderBy] 
+    console.log('opargzzz', opArgs) 
      let users = await prisma.user.findMany(opArgs)
          
      if(userId && ctx.wasIdInduced ) selectionsArr.pop()

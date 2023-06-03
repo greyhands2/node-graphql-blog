@@ -122,7 +122,7 @@ const Mutation = {
         let newPost
         await prisma.post.create({data, include:{author: true}})
         .then((data)=>{newPost=data})
-        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
+        .catch((e)=>{console.log(e);throw new GraphQLError("Something isn't as it should")})
         if(newPost.published === true) ctx.pubsub.publish('post', {
             post:{
                 mutation: 'CREATED',
