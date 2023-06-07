@@ -7,7 +7,7 @@ import generateJWT from '../helpers/generateJWT'
 import hashPassword from '../helpers/hashPassword'
 const Mutation = {
     async createUser(parent, args, ctx, info){
-       
+        if(args.data.password.length > 8) throw new GraphQLError("Password length must be a minimum of 8")
         const password = await hashPassword(args.data.password)
         let {prisma, gprf,dbRelationalFields} = ctx
         const emailTaken = await prisma.user.findUnique({
@@ -27,7 +27,7 @@ const Mutation = {
         opArgs.select = queryFields.select
 
         let newUser = await prisma.user.create({data});
-        console.log(newUser)
+        
         return {
             user:newUser,
             token: generateJWT(newUser.id)
@@ -38,7 +38,7 @@ const Mutation = {
         
         let user = await prisma.user.findUnique({where:{email: email}})
         if(!user) throw new GraphQLError("Something isn't as it should")
-        console.log('user', user)
+        
         let didPasswordMatch = await bcrypt.compare(password, user.password)
         if(!didPasswordMatch) throw new GraphQLError("Something isn't as it should")
         
@@ -95,7 +95,7 @@ const Mutation = {
     async createPost(parent, args, ctx, info){
         let {prisma, request} = ctx
         const userId = getUserId(request)
-        console.log('userid', userId)
+        
         let { title, body, published} = args.data
         const userExists = await prisma.user.findUnique({
             where:{id: userId}
@@ -122,7 +122,7 @@ const Mutation = {
         let newPost
         await prisma.post.create({data, include:{author: true}})
         .then((data)=>{newPost=data})
-        .catch((e)=>{console.log(e);throw new GraphQLError("Something isn't as it should")})
+        .catch((e)=>{throw new GraphQLError("Something isn't as it should")})
         if(newPost.published === true) ctx.pubsub.publish('post', {
             post:{
                 mutation: 'CREATED',
@@ -165,7 +165,7 @@ const Mutation = {
         
         if(!data || !data.title && !data.body && typeof data.published !== 'boolean') throw new GraphQLError("Invalid post data")
         const userId = getUserId(request)
-        console.log('check2', userId)
+        
         let updatedPost
         let opArgs = {}
 
@@ -248,7 +248,7 @@ const Mutation = {
         await prisma.comment.create({data, include:{ post: true, author: true}})
         .then((data)=>{ newComment = data})
         .catch((e)=>{ throw new GraphQLError("Something isn't as it should")})
-        console.log(newComment);
+        
         pubsub.publish(`comment:${postId}`, {
             comment:{
                 mutation: 'CREATED',

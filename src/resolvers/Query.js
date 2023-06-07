@@ -36,7 +36,7 @@ const Query = {
                     kind: 'Field',
                     name: { kind: 'Name', value: 'id' },
                 })
-                console.log('hi')
+                
                 ctx.wasIdInduced = true 
             } 
         
@@ -81,7 +81,7 @@ const Query = {
      opArgs.take = take
     if(cursor) [opArgs.cursor  = {id: cursor}]
     if(orderBy) [opArgs.orderBy= orderBy] 
-    console.log('opargzzz', opArgs) 
+    
      let users = await prisma.user.findMany(opArgs)
          
      if(userId && ctx.wasIdInduced ) selectionsArr.pop()
@@ -135,7 +135,7 @@ const Query = {
      if(cursor) [opArgs.cursor  = {id: cursor}]
      if(orderBy) [opArgs.orderBy= orderBy] 
     let posts = await prisma.post.findMany(opArgs)
-        console.log('posters', posts)
+        
     return posts
     },
     async myPosts(parent, {query, skip, take, cursor, orderBy}, {prisma, request, dbRelationalFields, gprf}, info){
