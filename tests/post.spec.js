@@ -7,23 +7,12 @@ import PrismaContext from '../src/prismaContext'
 import { v4 as uuidv4 } from 'uuid';
 import seedDatabase, {userOne} from './utils/seedDatabase'
 import getClient from './utils/getClient'
-
+import {getPosts, myPosts, updatePost, createPost, deletePost} from './utils/post-operations'
 const client = getClient();
 
 beforeEach(seedDatabase)
 test('fetch only published posts', async ()=>{
-    const getPosts = gql`
-      query getPosts {
-        posts {
-          title
-          id
-          body
-          published
-        }
-      }
-    
-    
-    `
+   
   
     const results = await client.query({
       query: getPosts
@@ -42,21 +31,7 @@ test('fetch only published posts', async ()=>{
   test('should return my posts', async()=>{
     const client = getClient(userOne.jwt)
 
-    const myPosts = gql`
-    query Posts {
-        myPosts {
-            title
-            body
-            published
-            author {
-                name
-                email
-                id
-            }
-        }
-    }
     
-    `
     const {data} = await client.query({query: myPosts})
     
     expect(data.myPosts[0].author.name).toBe(userOne.user.name)
@@ -69,25 +44,16 @@ test('fetch only published posts', async ()=>{
     const client = getClient(userOne.jwt)
    
     let postId = userOne.posts[0]["id"]
-    const updatePost = gql`
-    mutation UpdatePost {
-      updatePost(id: "${postId}", data: {
+    const variables = {
+      id: postId, 
+      data: {
         title: "some mad hope"
-      }) {
-        title
-        body
-        author {
-            name
-            email
-            id
-        }
       }
     }
-  `;
 
 
 
-    let result = await client.mutate({mutation: updatePost})
+    let result = await client.mutate({mutation: updatePost, variables})
 
 
     expect(result.data.updatePost.author.id).toBe(userOne.user.id)
@@ -98,22 +64,16 @@ test('fetch only published posts', async ()=>{
 
   test('should allow only an authenticated user to create a post', async()=>{
     const client = getClient(userOne.jwt)
-    const createPost = gql`
-    mutation createPost {
-      createPost(data:{title: "The Italian Job", body: "One of the best heist movies yet", published: true}){
-        title
-        id
-        body
-        author {
-          
-          id
-        }
-      }
-    }
-    
-    `
 
-    const result = await client.mutate({mutation: createPost})
+    const variables = {
+      data: {
+        title: "The Italian Job",
+        body: "One of the best heist movies yet",
+        published: true
+      }
+      
+    }
+    const result = await client.mutate({mutation: createPost, variables})
 
     expect(result.data.createPost.author.id).toBe(userOne.user.id)
     expect(result.data.createPost.title).toBe("The Italian Job")
@@ -124,18 +84,10 @@ test('fetch only published posts', async ()=>{
   test('should allow a user delete own post', async()=>{
     const client = getClient(userOne.jwt)
     const postId = userOne.posts[0]["id"]
-    const deletePost = gql`
-    mutation deletePost {
-      deletePost(id: "${postId}"){
-        id
-        author {
-          id
-        }
-      }
+    const variables = {
+      id: postId
     }
-    
-    `
-    const {data} = await client.mutate({mutation: deletePost})
+    const {data} = await client.mutate({mutation: deletePost, variables})
     expect(data.deletePost.id).toBe(postId)
     expect(data.deletePost.author.id).toBe(userOne.user.id)
 

@@ -2,7 +2,7 @@ import {gql } from '@apollo/client';
 
 
 const createUser = gql`
-mutation CreateUser($data: CreateUserInput!) {
+mutation CreateUser($data: CreateUserInput) {
   createUser(data: $data) {
     token
     user {
@@ -50,6 +50,10 @@ const getProfile = gql`
       }
     }
   `
+
+
+
+
 
 
 export {createUser, getUsers, login, getProfile}

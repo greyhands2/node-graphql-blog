@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 import PrismaContext from '../src/prismaContext'
 import { v4 as uuidv4 } from 'uuid';
 import seedDatabase, {userOne} from './utils/seedDatabase'
-import {createUser, getUsers, login, getProfile} from './utils/operations'
+import {createUser, getUsers, login, getProfile} from './utils/user-operations'
 import getClient from './utils/getClient'
 const client = getClient();
 
