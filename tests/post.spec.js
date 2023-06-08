@@ -3,7 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import bcrypt from 'bcryptjs'
 import { gql } from '@apollo/client';
-
+import PrismaContext from '../src/prismaContext'
 import { v4 as uuidv4 } from 'uuid';
 import seedDatabase, {userOne} from './utils/seedDatabase'
 import getClient from './utils/getClient'
@@ -122,5 +122,25 @@ test('fetch only published posts', async ()=>{
 
 
   test('should allow a user delete own post', async()=>{
+    const client = getClient(userOne.jwt)
+    const postId = userOne.posts[0]["id"]
+    const deletePost = gql`
+    mutation deletePost {
+      deletePost(id: "${postId}"){
+        id
+        author {
+          id
+        }
+      }
+    }
     
+    `
+    const {data} = await client.mutate({mutation: deletePost})
+    expect(data.deletePost.id).toBe(postId)
+    expect(data.deletePost.author.id).toBe(userOne.user.id)
+
+   
+    let deletedPost = await await PrismaContext.post.findUnique({where:{id: postId}})
+    await expect(deletedPost).toBe(null)
+
   })
