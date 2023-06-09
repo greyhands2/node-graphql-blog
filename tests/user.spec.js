@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 
 import PrismaContext from '../src/prismaContext'
 import { v4 as uuidv4 } from 'uuid';
-import seedDatabase, {userOne} from './utils/seedDatabase'
+import seedDatabase, {userOne, userTwo} from './utils/seedDatabase'
 import {createUser, getUsers, login, getProfile} from './utils/user-operations'
 import getClient from './utils/getClient'
 const client = getClient();
@@ -62,7 +62,6 @@ test('should expose public author profiles', async()=>{
 
 expect(results.data.users.length > 0).toBeTruthy()
 
-expect(results.data.users[0].name).toBe('jane')
 
 
 

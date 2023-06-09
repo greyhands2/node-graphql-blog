@@ -264,7 +264,7 @@ const Mutation = {
 
        await prisma.comment.delete({where: {updateCheckField: `${id}${userId}${postId}`}, include:{author: true, post: true}})
        .then((data) => {res=data})
-       .catch((e)=> {throw new GraphQLError("Something isn't as it should")}) 
+       .catch((e)=> {console.log(e);throw new GraphQLError("Something isn't as it should")}) 
 
        pubsub.publish(`comment:${res.post}`, {
         comment: {

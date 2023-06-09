@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs'
 import { gql } from '@apollo/client';
 import PrismaContext from '../src/prismaContext'
 import { v4 as uuidv4 } from 'uuid';
-import seedDatabase, {userOne} from './utils/seedDatabase'
+import seedDatabase, {userOne, userTwo} from './utils/seedDatabase'
 import getClient from './utils/getClient'
 import {getPosts, myPosts, updatePost, createPost, deletePost} from './utils/post-operations'
 const client = getClient();
